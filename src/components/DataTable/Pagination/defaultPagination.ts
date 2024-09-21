@@ -4,7 +4,8 @@ import {TablePaginationInterface} from "../types.ts";
 const defaultPagination: TablePaginationInterface<any> = {
     orderBy: 'id',
     order: SortOrderEnum.ASC,
-    page: 1,
+    page: 0,
+    total: 0,
     perPage: 5
 }
 export default defaultPagination

@@ -1,20 +1,30 @@
 import {TableBody, TableCell, TableRow} from "@mui/material";
 import {useContext} from "react";
-import {DataTableContext} from "../../../context/DataTableContext.tsx";
+import {DataTableContext, DataTableContextInterface} from "../../../context/DataTableContext.tsx";
+import {DataTableActionsContext} from "../../../context/DataTableActionsContext.tsx";
 
-const Body = () => {
-    const {tableConfig} = useContext(DataTableContext)
+const Body = <T, >() => {
+    const {tableConfig, data, actions} = useContext<DataTableContextInterface<T>>(DataTableContext)
 
     return (
         <TableBody>
-            {tableConfig.map((row) => (
+            {data.map((row) => (
+                <DataTableActionsContext.Provider
+                    key={row.id}
+                    value={{item: row}}
+                >
                     <TableRow
-                        hover
-                        key={row.field}
-                        sx={{ cursor: 'pointer' }}
                     >
-                        <TableCell align="right">{row}</TableCell>
+                        {tableConfig.map((header) =>
+                            <TableCell key={header.field}>{row[header.field]}</TableCell>
+                        )}
+                        {actions?.map((action,index) =>
+                            <TableCell align={'right'} key={index}>
+                                {action}
+                            </TableCell>
+                        )}
                     </TableRow>
+                </DataTableActionsContext.Provider>
                 ))
             }
         </TableBody>

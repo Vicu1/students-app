@@ -1,31 +1,29 @@
 import DataTable from "../../components/DataTable";
 import tableConfig from "./tableConfig.ts";
-import {Typography} from "@mui/material";
-import {useEffect, useState} from "react";
+import { Stack, Typography} from "@mui/material";
+import {useEffect, useRef, useState} from "react";
 import {TablePaginationInterface} from "../../components/DataTable/types.ts";
 import {SortOrderEnum} from "../../enums/SortOrderEnum.ts";
 import axios from "axios";
-import {set} from "react-hook-form";
-
-export interface StudentInterface {
-    id: number,
-    name: string,
-    birth_year: number,
-    status: string,
-    idnp: number,
-}
-
-
+import {enqueueSnackbar} from "notistack";
+import stringifyParams from "../../utils/stringifyParams.ts";
+import {actions} from "./Actions.tsx";
+import {useAppDispatch, useAppSelector} from "../../store/hooks.ts";
+import {setStudents, StudentInterface} from "../../store/modules/studentsSlice.ts";
+import Filters from "./Filters.tsx";
+import PrintButton from "./PrintButton.tsx";
 
 const Students = () => {
-    const [data, setData] = useState<StudentInterface[]>([])
     const [pagination, setPagination] = useState<TablePaginationInterface<StudentInterface>>({
         orderBy: 'id',
         order: SortOrderEnum.ASC,
-        page: 1,
+        page: 0,
+        total: 0,
         perPage: 5
     })
-
+    const tableRef = useRef({current: null})
+    const {students, filters} = useAppSelector((state) => state.studentsSlice)
+    const dispatch = useAppDispatch()
     const handleSort = (value) => {
         setPagination((prevData) => ({
             ...prevData,
@@ -34,25 +32,53 @@ const Students = () => {
         }))
     }
 
+    const handleChangePagination = (page: number, perPage?: number) => {
+        setPagination((prevData) => ({
+            ...prevData,
+            page,
+            perPage: perPage || prevData.perPage
+        }))
+    }
+
     const fetchData = async () => {
         try {
-            const {data: response} = await axios.get<StudentInterface>('')
+            const queryParams = stringifyParams({...pagination, ...filters})
+            const { data: response} = await axios.get<StudentInterface>(`/api/students?${queryParams}`)
 
-            setData(response)
+            dispatch(setStudents(response.data))
+
+            if(pagination.total !== response.meta.total) {
+                setPagination((prevState) => ({
+                    ...prevState,
+                    total: response.meta.total
+                }))
+            }
         } catch (e) {
-            console.log(e)
+            enqueueSnackbar(e, {variant: 'error'})
         }
     }
 
     useEffect(() => {
         fetchData()
-    }, []);
+    }, [pagination, filters]);
 
     return (
         <>
-            <Typography variant={'h3'}>Students list</Typography>
-            <DataTable<StudentInterface> data={data} tableConfig={tableConfig} pagination={pagination} handleSort={handleSort} />
+            <Stack direction={'row'} alignItems={'center'} justifyContent={'center'} gap={'20px'}>
+                <Typography variant={'h3'}>Students list</Typography>
+                <PrintButton tableRef={tableRef}/>
+            </Stack>
+            <Filters filters={filters} />
+            <DataTable<StudentInterface>
+                data={students}
+                ref={tableRef}
+                tableConfig={tableConfig}
+                pagination={pagination}
+                handleSort={handleSort}
+                actions={actions}
+                handleChangePagination={handleChangePagination}
+            />
         </>
     )
 }
-export default Students
+export default Students;

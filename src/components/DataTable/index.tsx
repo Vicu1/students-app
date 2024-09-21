@@ -1,41 +1,39 @@
-import {Box, Paper, Table, TableContainer, TablePagination} from "@mui/material";
+import { Paper, Table, TableContainer, TablePagination} from "@mui/material";
 import TableHead from "./TableHead.tsx";
 import {DataTableContext} from "../../context/DataTableContext.tsx";
 import Body from "./Body";
 import {DataTableProps} from "./types.ts";
+import {forwardRef} from "react";
 
 
-const DataTable = <T, > ({tableConfig, pagination, data, handleSort}: DataTableProps<T>) => {
+const DataTable =  forwardRef(<T, >({tableConfig, pagination, data, handleSort, handleChangePagination, actions = []}: DataTableProps<T>, ref) => {
 
     return (
-        <Box sx={{ width: '100%' }}>
-            <Paper sx={{ width: '100%', mb: 2 }}>
-                <DataTableContext.Provider value={{
-                    tableConfig,
-                    pagination,
-                    data,
-                    handleSort
-                }}>
-                <TableContainer>
-                    <Table
-                        sx={{ minWidth: 750 }}
-                    >
-                        <TableHead />
-                        <Body />
+        <Paper>
+            <DataTableContext.Provider value={{
+                tableConfig,
+                pagination,
+                data,
+                handleSort,
+                actions
+            }}>
+                <TableContainer ref={ref}>
+                    <Table>
+                        <TableHead<T> />
+                        <Body<T> />
                     </Table>
                 </TableContainer>
-                    <TablePagination
-                        rowsPerPageOptions={[5, 10, 25]}
-                        component="div"
-                        count={data.length}
-                        rowsPerPage={pagination.perPage}
-                        page={pagination.page - 1}
-                        // onPageChange={handleChangePage}
-                        // onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
-                </DataTableContext.Provider>
-            </Paper>
-        </Box>
+                <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component="div"
+                    count={pagination.total}
+                    rowsPerPage={pagination.perPage}
+                    page={pagination.page}
+                    onPageChange={(e, page) => handleChangePagination(page)}
+                    onRowsPerPageChange={(e) => handleChangePagination(pagination.page, Number(e.target.value))}
+                />
+            </DataTableContext.Provider>
+        </Paper>
     )
-}
+})
 export default DataTable
