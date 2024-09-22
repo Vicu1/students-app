@@ -1,7 +1,7 @@
 import DataTable from "../../components/DataTable";
 import tableConfig from "./tableConfig.ts";
 import { Stack, Typography} from "@mui/material";
-import {useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {TablePaginationInterface} from "../../components/DataTable/types.ts";
 import {SortOrderEnum} from "../../enums/SortOrderEnum.ts";
 import axios from "axios";
@@ -21,7 +21,7 @@ const Students = () => {
         total: 0,
         perPage: 5
     })
-    const tableRef = useRef({current: null})
+    const tableRef = useRef<HTMLDivElement | null>(null)
     const {students, filters} = useAppSelector((state) => state.studentsSlice)
     const dispatch = useAppDispatch()
     const handleSort = (value) => {
@@ -40,9 +40,10 @@ const Students = () => {
         }))
     }
 
-    const fetchData = async () => {
+    const queryParams = useMemo(() => stringifyParams({ ...pagination, ...filters }), [pagination, filters]);
+
+    const fetchData = useCallback(async () => {
         try {
-            const queryParams = stringifyParams({...pagination, ...filters})
             const { data: response} = await axios.get<StudentInterface>(`/api/students?${queryParams}`)
 
             dispatch(setStudents(response.data))
@@ -56,11 +57,11 @@ const Students = () => {
         } catch (e) {
             enqueueSnackbar(e, {variant: 'error'})
         }
-    }
+    }, [queryParams])
 
     useEffect(() => {
         fetchData()
-    }, [pagination, filters]);
+    }, [fetchData]);
 
     return (
         <>

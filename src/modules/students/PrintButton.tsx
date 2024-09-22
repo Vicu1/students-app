@@ -1,4 +1,5 @@
 import {Button} from "@mui/material";
+import {memo} from 'react'
 
 const PrintButton = ({tableRef}) => {
 
@@ -18,4 +19,4 @@ const PrintButton = ({tableRef}) => {
         </Button>
     )
 }
-export default PrintButton
+export default memo(PrintButton)

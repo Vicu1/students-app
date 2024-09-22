@@ -7,6 +7,7 @@ import * as yup from 'yup'
 import FormInput from "../../components/Form/FormInput.tsx";
 import FormDatePicker from "../../components/Form/FormDatePicker.tsx";
 import {useAppDispatch} from "../../store/hooks.ts";
+import {memo} from 'react'
 interface FilterProps {
     filters: StudentFiltersInterface
 }
@@ -15,7 +16,7 @@ const schema = yup.object().shape({
     name: yup.string()
         .min(3)
         .max(100),
-    idnp: yup.number().min(12).max(12),
+    idnp: yup.string().min(12).max(12),
 })
 
 const Filters: FC<FilterProps> = ({filters}) => {
@@ -74,4 +75,4 @@ const Filters: FC<FilterProps> = ({filters}) => {
         </FormProvider>
     )
 }
-export default Filters
+export default memo(Filters)

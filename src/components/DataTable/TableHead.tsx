@@ -1,8 +1,9 @@
-import {useContext} from "react";
+import {lazy, Suspense, useContext} from "react";
 import {DataTableContext, DataTableContextInterface} from "../../context/DataTableContext.tsx";
-import { TableCell, TableHead, TableRow, TableSortLabel} from "@mui/material";
+import { TableCell, TableHead, TableRow} from "@mui/material";
 import {SortOrderEnum} from "../../enums/SortOrderEnum.ts";
 import {Else, If, Then, When} from "react-if";
+const TableSortLabel = lazy(() => import('@mui/material/TableSortLabel'))
 
 const Head = <T, > () => {
     const {tableConfig, pagination, actions, handleSort} = useContext<DataTableContextInterface<T>>(DataTableContext)
@@ -17,13 +18,15 @@ const Head = <T, > () => {
                     >
                         <If condition={headCell.sortable}>
                             <Then>
-                                <TableSortLabel
-                                    active={pagination.orderBy === headCell.field}
-                                    direction={pagination.orderBy === headCell.field ? pagination.order : SortOrderEnum.ASC}
-                                    onClick={() => handleSort(headCell.field)}
-                                >
-                                    {headCell.label}
-                                </TableSortLabel>
+                                <Suspense>
+                                    <TableSortLabel
+                                        active={pagination.orderBy === headCell.field}
+                                        direction={pagination.orderBy === headCell.field ? pagination.order : SortOrderEnum.ASC}
+                                        onClick={() => handleSort(headCell.field)}
+                                    >
+                                        {headCell.label}
+                                    </TableSortLabel>
+                                </Suspense>
                             </Then>
                            <Else>
                                {headCell.label}
